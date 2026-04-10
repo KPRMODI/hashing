@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -40,39 +41,39 @@ public class MyHashMap<K, V> {
         return Math.abs(key.hashCode()) % table.length;
     }
 
+
+    // Put compares keys with equals() instead of == because == compares 2 objects that are exactly the same in the location of memory while equals() only compares if the keys are equalavent based on value.
+    // Remove uses iterator instead of a for each loop because iterator is more safe to delete values as doing so in a for each loop causes a ConcurrentModificationException error.
+
     // ── put ───────────────────────────────────────────────────────────────
     public V put(K key, V value) {
-        // TODO Step 1: compute the index using hash(key)
+
         int index = hash(key);
 
-        // TODO Step 2: if table[index] is null, create a new LinkedList there
+
         if (table[index] == null){
             table[index] = new LinkedList<Entry<K, V>>();
         }
 
-        // TODO Step 3: walk the list at table[index]
-        //   -- compare keys using .equals(), not ==
-        //   -- if an entry with the same key already exists, update its value
-        //      and return the OLD value (do not increment size)
+
         for (Entry<K,V> entry : table[index]) {
-            if (entry.key.equals(index)){
-                V previousValue = entry.value;
+            if (entry.key.equals(key)){
+                V oldValue = entry.value;
                 entry.value = value;
-                return previousValue;
+                return oldValue;
             }
         }
 
-        // TODO Step 4: no existing entry found -- add a new Entry to the
-        //   FRONT of the list (O(1) -- no traversal needed), increment size, return null
 
         table[index].addFirst(new Entry<>(key, value));
         size++;
         return null;
     }
 
+
     // ── get ───────────────────────────────────────────────────────────────
     public V get(K key) {
-        // TODO Step 1: compute the index using hash(key)
+
         int index = hash(key);
         // TODO Step 2: if table[index] is null, return null (key not present)
         if (table[index] == null) {
@@ -86,7 +87,7 @@ public class MyHashMap<K, V> {
             }
         }
         // TODO Step 4: key was not in the list -- return null
-        return null; // replace this
+        return null; 
     }
 
     // ── containsKey ───────────────────────────────────────────────────────
@@ -98,20 +99,28 @@ public class MyHashMap<K, V> {
 
         int index = hash(key);
 
+        if (table[index] == null) {
+            return false;
+        }
+
         for (Entry<K, V> entry : table[index]) {
-            if (entry.key.equals(null)){
+            if (entry.key.equals(key)){
                 return true;
             }
-            }
-    return false;
+        }
+
+        return false; //default false
+
     }
 
     // ── remove ────────────────────────────────────────────────────────────
     public V remove(K key) {
         // TODO Step 1: compute the index using hash(key)
-
+        int index = hash(key);
         // TODO Step 2: if table[index] is null, return null (nothing to remove)
-
+        if (table[index] == null) {
+            return null;
+        }
         // TODO Step 3: walk the list at table[index]
         //   -- compare keys using .equals(), not ==
         //   -- if an entry with a matching key is found:
@@ -119,7 +128,16 @@ public class MyHashMap<K, V> {
         //   -- You cannot remove from a list inside a for-each loop.
         //      Use an iterator: Iterator<Entry<K,V>> it = table[index].iterator()
         //      then it.remove() when you find the match.
-
+        Iterator<Entry<K, V>> it = table[index].iterator();
+        while (it.hasNext()) {
+            Entry<K, V> entry = it.next();
+            if (entry.key.equals(key)) {
+                V oldValue = entry.value;
+                it.remove();
+                size--;
+                return oldValue;
+            }
+        }
         // TODO Step 4: key was not found -- return null
 
         return null; // replace this
